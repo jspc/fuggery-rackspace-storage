@@ -36,8 +36,8 @@ module FC
       end
 
       def _get_snapshot name
-        @bs.snapshots.each { |s| return v if s.display_name == name }
-        raise FC::Rack::NoSuchVolume, "#{name} is not a valid snapshot display_name"
+        @bs.snapshots.each { |s| return s if s.display_name == name }
+        raise FC::Rack::NoSuchSnapshot, "#{name} is not a valid snapshot display_name"
       end
 
       def _attachments name
@@ -47,8 +47,11 @@ module FC
         end
       end
       
-      def mount host, volume
-        nil
+      def mount host_name, volume_name
+        host   = _get_server host_name
+        volume = _get_volume volume_name
+
+        host.attach_volume volume
       end
 
       def umount host_name, volume_name
@@ -56,7 +59,6 @@ module FC
         volume = _get_volume volume_name
 
         host.attachments.each do |a|
-          puts a.inspect
           if a.volume_id == volume.id
             return a.detach
           end
@@ -64,14 +66,33 @@ module FC
         raise FC::Rack::NoSuchMount, "#{volume_name} is not mounted on #{host_name}"
       end
 
-      def create_snapshot volume_name
+      def create_snapshot volume_name, wait=false
         volume = _get_volume volume_name
-        volume.create_snapshot :display_name => "#{volume_name}-#{Time.new.strftime "%Y%m%d%H%M"}"
+        name   = "#{volume_name}-#{Time.new.strftime "%Y%m%d%H%M"}"
+        begin
+          volume.create_snapshot :display_name => name
+        rescue Fog::Rackspace::BlockStorage::ServiceError
+          raise FC::Rack::DoingStuff, "Already snapshotting something"
+        end
+
+        if wait
+          until _get_snapshot(name).state == 'available'
+            sleep 1
+          end
+        end
+        return name
       end
       
-      def create_volume name, snapshot_name
+      def create_volume name, snapshot_name, wait=false
         snapshot = _get_snapshot snapshot_name
         @bs.volumes.create( :size => 100, :display_name => name, :snapshot_id => snapshot.id )
+
+        if wait
+          until _get_volume(name).state == 'available'
+            sleep 1
+          end
+        end
+        return name
       end
 
     end
