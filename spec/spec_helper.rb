@@ -13,6 +13,8 @@ RSKEY     = ENV['RACKSPACE_KEY']
 BASE_HOST = 'jspc_test'
 BASE_DISK = 'jspc_test-db'
 AN_DISK   = 'test_volume'
+AN_DISK_N = 'test_volume-recreated'
 
 FAKE_HOST = 'man_i_hope_this_never_gets_created'
 FAKE_DISK = 'this_disk_has_bad_sectors'
+FAKE_SNAP = 'blurry-polaroid'
