@@ -1,13 +1,10 @@
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), ".", "lib")
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
-require 'fc/rack/storage'
+require 'fuggery/rackspace/storage'
 
-s = FC::Rack::Storage.new ENV['RACKSPACE_USER'], ENV['RACKSPACE_KEY']
+s = Fuggery::Rackspace::Storage.new ENV['RACKSPACE_USER'], ENV['RACKSPACE_KEY']
 
-s.umount 'jspc_test', 'jspc_test-db'
-
-sleep 30
-
-snapshot = s.create_snapshot('jspc_test-db', wait=true)
-s.create_volume('new_bollocks', snapshot, wait=true)
-s.mount 'jspc_test', 'new_bollocks'
+s.umount 'my_shiny_server', 'my_cloneable_disk', wait=true
+snapshot = s.create_snapshot('my_cloneable_disk', wait=true)
+s.create_volume('my_cloned_disk', snapshot, wait=true)
+s.mount 'my_shiny_server', 'my_cloned_disk'
