@@ -3,10 +3,10 @@
 # Do something clever
 
 require 'fog'
-require 'fc/rack/errors'
+require 'fuggery/rackspace/errors'
 
-module FC
-  module Rack
+module Fuggery
+  module Rackspace
     class Storage
       def initialize user, key
         @c = Fog::Compute.new({
@@ -27,17 +27,17 @@ module FC
 
       def _get_server name
         @c.servers.each { |s| return s if s.name == name }
-        raise FC::Rack::NoSuchServer, "#{name} is not a valid server display_name"
+        raise Fuggery::Rackspace::NoSuchServer, "#{name} is not a valid server display_name"
       end
       
       def _get_volume name
         @bs.volumes.each { |v| return v if v.display_name == name }
-        raise FC::Rack::NoSuchVolume, "#{name} is not a valid volume display_name"
+        raise Fuggery::Rackspace::NoSuchVolume, "#{name} is not a valid volume display_name"
       end
 
       def _get_snapshot name
         @bs.snapshots.each { |s| return s if s.display_name == name }
-        raise FC::Rack::NoSuchSnapshot, "#{name} is not a valid snapshot display_name"
+        raise Fuggery::Rackspace::NoSuchSnapshot, "#{name} is not a valid snapshot display_name"
       end
 
       def _attachments name
@@ -63,7 +63,7 @@ module FC
             return a.detach
           end
         end
-        raise FC::Rack::NoSuchMount, "#{volume_name} is not mounted on #{host_name}"
+        raise Fuggery::Rackspace::NoSuchMount, "#{volume_name} is not mounted on #{host_name}"
       end
 
       def create_snapshot volume_name, wait=false
@@ -72,7 +72,7 @@ module FC
         begin
           volume.create_snapshot :display_name => name
         rescue Fog::Rackspace::BlockStorage::ServiceError
-          raise FC::Rack::DoingStuff, "Already snapshotting something"
+          raise Fuggery::Rackspace::DoingStuff, "Already snapshotting something"
         end
 
         if wait

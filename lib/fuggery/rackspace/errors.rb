@@ -1,5 +1,5 @@
-module FC
-  module Rack
+module Fuggery
+  module Rackspace
     class NoSuchServer   < StandardError; end
     class NoSuchVolume   < StandardError; end
     class NoSuchSnapshot < StandardError; end
