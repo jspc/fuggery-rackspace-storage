@@ -2,10 +2,10 @@
 
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
-require 'fc/rack/storage'
+require 'fuggery/rackspace/storage'
 require 'fog'
 
-#Fog.mock!       # The mocks for Fog::Rackspace are shit
+#Fog.mock!       # The mocks for Fog::Rackspace are shit. Or I'm bad at using them *whistles*
 
 RSUSER    = ENV['RACKSPACE_USER']
 RSKEY     = ENV['RACKSPACE_KEY']

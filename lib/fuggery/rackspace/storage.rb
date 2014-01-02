@@ -46,6 +46,18 @@ module Fuggery
           att < a['server_id']
         end
       end
+
+      def is_attached? host_name, volume_name
+        host   = _get_server host_name
+        volume = _get_volume volume_name
+
+        host.attachments.each do |a|
+          if a.volume_id == volume.id
+            return a
+          end
+        end
+        return false
+      end
       
       def mount host_name, volume_name
         host   = _get_server host_name
@@ -54,13 +66,13 @@ module Fuggery
         host.attach_volume volume
       end
 
-      def umount host_name, volume_name
-        host   = _get_server host_name
-        volume = _get_volume volume_name
-
-        host.attachments.each do |a|
-          if a.volume_id == volume.id
-            return a.detach
+      def umount host_name, volume_name, wait=false
+        if h = is_attached?(host_name, volume_name)
+          h.detach
+          if wait
+            while  is_attached? host_name, volume_name
+              sleep 1
+            end
           end
         end
         raise Fuggery::Rackspace::NoSuchMount, "#{volume_name} is not mounted on #{host_name}"
