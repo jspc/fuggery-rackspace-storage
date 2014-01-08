@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+#
+# Try and do some of our fuggery volume crack
+
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), "..", "lib")
+
+require 'fuggery/rackspace/storage'
+require 'optparse'
+
+user  = ENV['RACKSPACE_USER']
+key   = ENV['RACKSPACE_KEY']
+host  = nil
+disk  = nil
+new   = nil
+snap  = nil
+count = 10
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options] operation(s)"
+  opts.on("-u", "--user USERNAME", "rackspace username")                    { |u| user  = u.to_s }
+  opts.on("-k", "--key KEY", "rackspace API key")                           { |k| key   = k.to_s }
+  opts.on("-h", "--host HOSTNAME", "target hostname")                       { |h| host  = h.to_s }
+  opts.on("-d", "--disk DISKNAME", "disk to operate on")                    { |d| disk  = d.to_s }
+  opts.on("-n", "--new DISKNAME", "new volume name")                        { |n| new   = n.to_s }
+  opts.on("-s", "--snapshot SNAPSHOT", "snapshot name")                     { |s| snap  = s.to_s }
+  opts.on("-c", "--count COUNT", "DEPRECATED - results to return")          { |c| count = c.to_i }
+end.parse!
+
+if ARGV.length == 0
+  raise ArgumentError, "Missing at least one operation 
+You can use any of: 
+\t mount
+\t umount
+
+\t create_volume
+\t create_snapshot
+
+\t show_servers
+\t show_volumes
+\t show_snapshots
+\t last_snapshot"
+end
+
+s = Fuggery::Rackspace::Storage.new user, key
+
+ARGV.each do |operation|
+  case operation
+    when 'umount'
+    puts s.umount host, disk, wait=true
+    when 'mount'
+    puts s.mount host, disk
+    when 'create_volume'
+    puts s.create_volume new, snap, wait=true
+    when 'create_snapshot'
+    puts s.create_snapshot disk, wait=true
+    when 'show_servers'
+    puts s.get_servers_glob.join("\n")
+    when 'show_snapshots'
+    puts s.get_snapshots_glob(disk).join("\n")
+    when 'last_snapshot'
+    puts s.get_snapshots_glob(disk).first
+    when 'show_volumes'
+    puts s.get_volumes_glob.join("\n")
+    else
+    warn "Operation: #{operation} is invalid"
+  end
+end
