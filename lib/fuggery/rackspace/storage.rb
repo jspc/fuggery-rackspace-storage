@@ -59,11 +59,35 @@ module Fuggery
         return false
       end
       
+      def _try_server_by_id server_id
+        @c.servers.each { |s| return s.name if s.id == server_id }
+        return server_id
+      end
+
+      def get_servers_glob
+        @c.servers.map{ |s| s.name }.sort
+      end
+
+      def get_snapshots_glob volume_name
+        snapshots = []
+        @bs.snapshots.each { |s| snapshots << s.display_name if s.display_name =~ /#{volume_name}/ }
+        snapshots.sort.reverse
+      end
+
+      def get_volumes_glob
+        volumes = []
+        @bs.volumes.each do |v|
+          attachments = v.attachments.map { |a| _try_server_by_id a['server_id'] }.join(',')
+          volumes << "#{v.display_name}: #{attachments}"
+        end
+        volumes.sort.reverse
+      end
+
       def mount host_name, volume_name
         host   = _get_server host_name
         volume = _get_volume volume_name
 
-        host.attach_volume volume
+        return host.attach_volume(volume).device
       end
 
       def umount host_name, volume_name, wait=false
@@ -74,6 +98,7 @@ module Fuggery
               sleep 1
             end
           end
+          return true
         end
         raise Fuggery::Rackspace::NoSuchMount, "#{volume_name} is not mounted on #{host_name}"
       end
