@@ -122,7 +122,7 @@ module Fuggery
       
       def create_volume name, snapshot_name, wait=false
         snapshot = _get_snapshot snapshot_name
-        @bs.volumes.create( :size => 100, :display_name => name, :snapshot_id => snapshot.id )
+        @bs.volumes.create( :size => snapshot.size, :display_name => name, :snapshot_id => snapshot.id )
 
         if wait
           until _get_volume(name).state == 'available'
