@@ -35,6 +35,8 @@ You can use any of:
 \t create_volume
 \t create_snapshot
 
+\t delete_volume
+
 \t show_servers
 \t show_volumes
 \t show_snapshots
@@ -49,10 +51,15 @@ ARGV.each do |operation|
     puts s.umount host, disk, wait=true
     when 'mount'
     puts s.mount host, disk
+
     when 'create_volume'
     puts s.create_volume new, snap, wait=true
     when 'create_snapshot'
     puts s.create_snapshot disk, wait=true
+
+    when 'delete_volume'
+    puts s.delete_volume disk, wait=true
+
     when 'show_servers'
     puts s.get_servers_glob.join("\n")
     when 'show_snapshots'

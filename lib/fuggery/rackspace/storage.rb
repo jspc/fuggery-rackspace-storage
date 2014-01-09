@@ -37,7 +37,7 @@ module Fuggery
 
       def _get_snapshot name
         @bs.snapshots.each { |s| return s if s.display_name == name }
-        raise Fuggery::Rackspace::NoSuchSnapshot, "#{name} is not a valid snapshot display_name"
+        nil
       end
 
       def _attachments name
@@ -130,6 +130,15 @@ module Fuggery
           end
         end
         return name
+      end
+
+      def delete_volume name, wait=false
+        volume = _get_volume name
+        get_snapshots_glob(name).each do |s|
+          _get_snapshot(s).destroy
+          sleep 1 unless  _get_snapshot(s) == nil
+        end
+        volume.destroy
       end
 
     end
